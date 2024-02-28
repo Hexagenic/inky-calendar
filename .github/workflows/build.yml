@@ -1,4 +1,4 @@
-name: Build Inky Calendar
+name: Build & Test
 on:
   push:
     branches: [ main ]
@@ -10,7 +10,7 @@ env:
   PIMORONI_PICO_VERSION: "1.21.0"
 jobs:
   build:
-    name: Build
+    name: Build & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1

@@ -1,0 +1,35 @@
+name: Build Inky Calendar
+on:
+  push:
+    tags: ["v*"]
+env:
+  BUILD_TYPE: Release
+  PICO_SDK_VERSION: "1.5.1"
+  PIMORONI_PICO_VERSION: "1.21.0"
+jobs:
+  release:
+    name: Release build
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - name: Install deps
+        run: |
+          wget https://github.com/raspberrypi/pico-sdk/archive/refs/tags/${{env.PICO_SDK_VERSION}}.tar.gz -O /tmp/pico-sdk.tar.gz
+          wget https://github.com/pimoroni/pimoroni-pico/archive/refs/tags/v${{env.PIMORONI_PICO_VERSION}}.tar.gz -O /tmp/pimoroni-pico.tar.gz
+          tar -xf /tmp/pico-sdk.tar.gz
+          tar -xf /tmp/pimoroni-pico.tar.gz
+          rm /tmp/pico-sdk.tar.gz /tmp/pimoroni-pico.tar.gz
+          sudo apt-get install -y gcc-arm-none-eabi
+      - name: Configure CMake
+        env:
+          PICO_SDK_PATH: "${{github.workspace}}/pico-sdk-${{env.PICO_SDK_VERSION}}"
+          PIMORONI_PICO_PATH: "${{github.workspace}}/pimoroni-pico-${{env.PIMORONI_PICO_VERSION}}"
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DPIMORONI_PICO_PATH=$PIMORONI_PICO_PATH
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - uses: ncipollo/release-action@v1.14.0
+        with:
+          artifacts: "build/inky_calendar.uf2"
+          draft: true
